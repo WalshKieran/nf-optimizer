@@ -15,12 +15,12 @@ clamp_resources = {"memory": (500, nf_memory_to_mb('124.GB')), "wall-time": (300
 if __name__ == "__main__":
     opt = Optimizer(confidence, multiplier)
 
-    for inputDir in sys.argv[1:]:
+    for inputDir in [os.path.abspath(x) for x in sys.argv[1:]]:
         # Find project names
         p = subprocess.Popen(['nextflow', 'log'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=inputDir)
         pOut, pErr = p.communicate() 
         if p.returncode: raise Exception(pErr.decode())
-        projectNames = [x.split('\t')[2] for i, x in enumerate(pOut.decode().splitlines()) if i%2]
+        projectNames = [x.split('\t')[2].strip() for i, x in enumerate(pOut.decode().splitlines()) if i>0 and x]
 
         print(f'Processing {inputDir} ({",".join(projectNames)})')
 
