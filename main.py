@@ -4,13 +4,18 @@ from optimizer import Optimizer, Resources
 from native import getNativePBSResources
 from utils import nf_memory_to_mb, nf_time_to_seconds, seconds_to_nf_time, mb_to_nf_memory
 
-print(f'To combine resume and optimization, export NXF_ENABLE_CACHE_INVALIDATION_ON_TASK_DIRECTIVE_CHANGE=false before ALL runs', file=sys.stderr)
-
-natives = [getNativePBSResources()]
+natives = {"pbspro": getNativePBSResources()}
 confidence = 0.95
 multiplier = 1.2
 nextflow_fields = ['hash', 'native_id', 'peak_rss', 'realtime', 'process', 'tag', 'hash', 'exit']
 clamp_resources = {"memory": (500, nf_memory_to_mb('124.GB')), "wall-time": (300, nf_time_to_seconds('48.h'))}
+minimum_walltime = 10
+
+# Print very important downsides of use
+print('\033[93m')
+print(f'WARN: To combine resume and optimization, export NXF_ENABLE_CACHE_INVALIDATION_ON_TASK_DIRECTIVE_CHANGE=false before ALL runs - do not make changes to ext.args after this.\n', file=sys.stderr)
+print(f'WARN: If your executor is not {",".join(natives.keys())}, the peak memory could be inaccurate - minimum_walltime reduces errors but will not prevent them for programs that have sudden spikes in memory.\n', file=sys.stderr)
+print('\033[0m')
 
 if __name__ == "__main__":
     opt = Optimizer(confidence, multiplier)
@@ -41,17 +46,19 @@ if __name__ == "__main__":
 
             key = vals['native_id'] + vals['hash']
             nativeToKey[vals['native_id']] = key
+            walltime = nf_time_to_seconds(vals['realtime']) if 'realtime' in vals else 0
             
-            resources[key] = {
-                'category': vals['process'],
-                'subcategory': vals.get('tag', ''),
-                'memory': nf_memory_to_mb(vals['peak_rss']) if 'peak_rss' in vals else 0, 
-                'wall-time': nf_time_to_seconds(vals['realtime']) if 'realtime' in vals else 0,
-                'success': vals.get('exit', None) == '0',
-            }
+            if walltime >= minimum_walltime:
+                resources[key] = {
+                    'category': vals['process'],
+                    'subcategory': vals.get('tag', ''),
+                    'memory': nf_memory_to_mb(vals['peak_rss']) if 'peak_rss' in vals else 0, 
+                    'wall-time': walltime,
+                    'success': vals.get('exit', None) == '0',
+                }
 
         # Overwrite if native resources available
-        for n in natives:
+        for n in natives.values():
             for nativeId, rObj in n.items():
                 key = nativeToKey.get(nativeId, None)
                 if key: resources[key] = {**resources[key], **rObj}
