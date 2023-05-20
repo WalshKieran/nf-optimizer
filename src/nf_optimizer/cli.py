@@ -8,16 +8,15 @@ def main():
     nextflow_fields = ['hash', 'native_id', 'peak_rss', 'realtime', 'process', 'tag', 'hash', 'status']
     natives = {"pbspro": getNativePBSResources}
 
-    # Parse arguments
     parser = argparse.ArgumentParser(
                     prog='nf-optimizer',
-                    description=f'Simple proof of concept package to generate Nextflow config files with constrained resources based on existing runs. Read http://github.com/WalshKieran/nf-optimizer carefully before using alongside -resume.',
+                    description=f'Simple proof of concept package to generate Nextflow config files with constrained resources based on previous runs. Read http://github.com/WalshKieran/nf-optimizer carefully before using alongside -resume.',
                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-m', '--memory', type=int, nargs=2, help="Memory range in megabytes.", default=[500, nf_memory_to_mb('124.GB')])
     parser.add_argument('-t', '--walltime', type=int, nargs=2, help="Walltime range in seconds.", default=[300, nf_time_to_seconds('48.h')])
     parser.add_argument('-c', '--confidence', type=float, help="Confidence of estimates from between 0,1.", default=0.95)
     parser.add_argument('--multiplier', type=float, help="Multiplier for biological/hardware variance.", default=1.2)
-    parser.add_argument('--skip_duration', type=int, nargs=1, help=f"Skip any (inaccurate) tasks below this duration. Ignored for {', '.join(natives.keys())}.", default=10)
+    parser.add_argument('--skip_duration', type=int, nargs=1, help=f"Skip any (inaccurate) tasks below this duration in seconds. Ignored for {', '.join(natives.keys())}.", default=10)
     parser.add_argument('--output', '-o', help='Output file path', default='resources.config')
     parser.add_argument('--dry-run', help='Display optimized config instead of writing.', action='store_true')
     parser.add_argument('--clean', help='Delete cached resources and exit.', action='store_true')
@@ -127,5 +126,5 @@ def main():
             print(conf)
         else: 
             with open(args.output, 'w') as f: f.write(conf)
-        print(f'Resources successfully esitimated from {count} tasks')
+        print(f'Resources successfully estimated from {count} tasks')
             

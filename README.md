@@ -1,8 +1,8 @@
 ## nf-optimizer
-Simple tool to generate Nextflow config files with constrained resources based on previous runs. Depends on Nextflow.
+Simple proof of concept package to generate Nextflow config files with constrained resources based on previous runs. Depends on Nextflow.
 
 > **Note**
-> This package is a concept/test only. It is only tested on a few workflows.
+> This is a concept/test package only - it has only been trialled on a few workflows using **accurate** metrics from PBS Pro.
 
 ## Getting Started
 ### Installation:
@@ -10,15 +10,18 @@ Simple tool to generate Nextflow config files with constrained resources based o
 pip install git+https://github.com/WalshKieran/nf-optimizer
 ```
 
-### Minimal Usage:
+### Minimal Example:
 ```bash
 nf-optimizer -o resources.config .
 nextflow run ... -c resources.config
 ```
 
-### Typical Usage:
+### Typical Example:
 ```bash
-# Allows resuming with updated resources.config - you must export this for initial AND resumed runs, and should not modify other task directives like ext.args when resuming (unless you delete associated work directories)
+# Allows resuming with updated resources.config
+# You must export this for initial AND resumed runs, and should
+# not modify other task directives like ext.args when resuming 
+# unless you delete associated work directories
 export NXF_ENABLE_CACHE_INVALIDATION_ON_TASK_DIRECTIVE_CHANGE=false
 
 # Clamp resources for your target machine/HPC, combine multiple folders
@@ -28,15 +31,15 @@ nf-optimizer -m 500 8000 -t 60 3600 -o resources.config /all/runs/* /another/run
 nextflow run ... -c resources.config -resume
 ```
 
-Note hidden files ".optimized_cache.json" are created in each supplied directory, since Nextflow metrics may be enhanced with more accurate (but time-limited) HPC stats. Any folder with this cache can be reloaded in future.
+Note hidden ".optimized_cache.json" files are created in each supplied directory so that Nextflow metrics can be enhanced with more accurate (but time-limited) HPC stats. Any folder with this file can be reloaded in future.
 
 ## Usage
-```bash
+```
 usage: nf-optimizer [-h] [-m MEMORY MEMORY] [-t WALLTIME WALLTIME] [-c CONFIDENCE] [--multiplier MULTIPLIER] [--skip_duration SKIP_DURATION]
                     [--output OUTPUT] [--dry-run] [--clean]
                     directories [directories ...]
 
-Simple proof of concept package to generate Nextflow config files with constrained resources based on existing runs.
+Simple proof of concept package to generate Nextflow config files with constrained resources based on previous runs.
 
 positional arguments:
   directories           List of Nextflow project directories. All contained runs will be included.
@@ -52,11 +55,11 @@ options:
   --multiplier MULTIPLIER
                         Multiplier for biological/hardware variance. (default: 1.2)
   --skip_duration SKIP_DURATION
-                        Skip any (inaccurate) tasks below this duration. Ignored for pbspro. (default: 10)
+                        Skip any (inaccurate) tasks below this duration in seconds. Ignored for pbspro. (default: 10)
   --output OUTPUT, -o OUTPUT
                         Output file path (default: resources.config)
   --dry-run             Display optimized config instead of writing. (default: False)
   --clean               Delete cached resources and exit. (default: False)
 ```
 ## Acknowledgments
-* Implimented at UNSW, Sydney
+* Implemented at UNSW, Sydney
