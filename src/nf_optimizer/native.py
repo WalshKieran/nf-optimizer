@@ -22,8 +22,9 @@ def getNativePBSResources():
             qstatObj = json.loads(qstatOutput)
             for k, v in qstatObj['Jobs'].items():
                 if "resources_used" in v:
-                    ret[k] = {
-                        'wall-time': walltime_string_to_seconds(v["resources_used"]["walltime"]),
-                        'memory': memory_string_to_mb(v["resources_used"]["mem"])
-                    }
+                    if {"walltime", "mem"} <= set(v["resources_used"]):
+                        ret[k] = {
+                            'wall-time': walltime_string_to_seconds(v["resources_used"]["walltime"]),
+                            'memory': memory_string_to_mb(v["resources_used"]["mem"]),
+                        }
     return ret

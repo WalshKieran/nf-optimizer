@@ -1,4 +1,4 @@
-import math
+import math, argparse
 
 def seconds_to_nf_time(s):
     return f"{math.ceil(s/60)}.m"

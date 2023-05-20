@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+nf-optimizer = "nf_optimizer.cli:main"
+
+[project]
+name = "nf-optimizer"
+version = "0.0.1"
+authors = [
+  { name="Kieran Walsh", email="k.walsh@unsw.edu.au" },
+]
+description = "Simple package to generate Nextflow config files with constrained resources based on existing runs"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "lifelines",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/WalshKieran/nf-optimizer"
+"Bug Tracker" = "https://github.com/WalshKieran/nf-optimizer/issues"
