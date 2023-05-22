@@ -9,8 +9,8 @@ def getNativePBSResources():
         if len(string) < 3: return 1
         userMemSuffix = string[-2:]
         userMemAmount = string[:-2]
-        memSuffix = ['kb','mb','gb','tb']
-        return math.ceil(int(userMemAmount) * pow(1024, (memSuffix.index(userMemSuffix))-1))
+        memSuffix = ['b','kb','mb','gb','tb']
+        return math.ceil(int(userMemAmount) * pow(1024, (memSuffix.index(userMemSuffix))-2))
     ret = {}
 
     qstatCmd = '/opt/pbs/bin/qstat'

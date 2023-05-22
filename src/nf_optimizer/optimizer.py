@@ -19,6 +19,9 @@ class Optimizer:
         categoryObj.add_measurement(resources)
         if subcategoryObj: subcategoryObj.add_measurement(categoryObj, resources)
 
+    def count_measurements(self):
+        return sum([x.submitted_count for x in self.categories.values()])
+
     def estimate_max_measurements(self, clamp_resources):
         for c in self.categories.values():
             r = c.estimate_max_measurement(self.confidence)

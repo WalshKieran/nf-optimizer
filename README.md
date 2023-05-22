@@ -1,5 +1,5 @@
 ## nf-optimizer
-Simple proof of concept package to generate Nextflow config files with constrained resources based on previous runs. Depends on Nextflow.
+Simple proof of concept package to generate Nextflow config files with constrained resources based on previous runs. Requires Nextflow for directory inputs.
 
 > **Note**
 > This is a concept/test package only - it has only been trialled on a few workflows using **accurate** metrics from PBS Pro.
@@ -31,18 +31,19 @@ nf-optimizer -m 500 8000 -t 60 3600 -o resources.config /all/runs/* /another/run
 nextflow run ... -c resources.config -resume
 ```
 
-Note hidden ".optimized_cache.json" files are created in each supplied directory so that Nextflow metrics can be enhanced with more accurate (but time-limited) HPC stats. Any folder with this file can be reloaded in future.
+Note hidden ".nf_optimizer_cache.json" files are created in each supplied directory so that Nextflow metrics can be enhanced with more accurate (but time-limited) HPC stats. Any folder with this file can be reloaded in future.
 
 ## Usage
 ```
 usage: nf-optimizer [-h] [-m MEMORY MEMORY] [-t WALLTIME WALLTIME] [-c CONFIDENCE] [--multiplier MULTIPLIER] [--skip_duration SKIP_DURATION]
                     [--output OUTPUT] [--dry-run] [--clean]
-                    directories [directories ...]
+                    paths [paths ...]
 
 Simple proof of concept package to generate Nextflow config files with constrained resources based on previous runs.
 
 positional arguments:
-  directories           List of Nextflow project directories. All contained runs will be included.
+  paths                 List of Nextflow project directories or execution traces (.txt). Use traces only if project folders are in use. For projects, all contained
+                        runs will be included.
 
 options:
   -h, --help            show this help message and exit
@@ -55,7 +56,7 @@ options:
   --multiplier MULTIPLIER
                         Multiplier for biological/hardware variance. (default: 1.2)
   --skip_duration SKIP_DURATION
-                        Skip any (inaccurate) tasks below this duration in seconds. Ignored for pbspro. (default: 10)
+                        Skip any (inaccurate) tasks below this duration in seconds. Ignored (-1) for pbspro. (default: 10)
   --output OUTPUT, -o OUTPUT
                         Output file path (default: resources.config)
   --dry-run             Display optimized config instead of writing. (default: False)
