@@ -1,13 +1,16 @@
-## nf-optimizer
+## Nextflow Optimizer
 Simple proof of concept package to generate Nextflow config files with constrained resources based on previous runs. Requires Nextflow for directory inputs.
 
-> **Note**
+> [!NOTE]
 > This is a concept/test package only - it has only been trialled on a few workflows using **accurate** metrics from PBS Pro.
 
 ## Getting Started
 ### Installation:
 ```bash
 pip install git+https://github.com/WalshKieran/nf-optimizer
+
+# Note on HPC, add python module >= 3.7 and then run the following preferred method:
+python -m pip install --user git+https://github.com/WalshKieran/nf-optimizer
 ```
 
 ### Minimal Example:
@@ -17,21 +20,35 @@ nextflow run ... -c resources.config
 ```
 
 ### Typical Example:
-```bash
-# Allows resuming with updated resources.config
-# You must export this for initial AND resumed runs, and should
-# not modify other task directives like ext.args when resuming 
-# unless you delete associated work directories
-export NXF_ENABLE_CACHE_INVALIDATION_ON_TASK_DIRECTIVE_CHANGE=false
 
-# Clamp resources for your target machine/HPC, combine multiple folders
-nf-optimizer -m 500 8000 -t 60 3600 -o resources.config /all/runs/* /another/run
-
-# Will lead to a lot of retries if previous runs are not representative
-nextflow run ... -c resources.config -resume
+1. Limit the samples in your samplesheet (for a better upper bound, you could even select the largest samples):
+``` bash
+head -n 5 samplesheet.csv > samplesheet_4.csv
 ```
 
-Note hidden ".nf_optimizer_cache.json" files are created in each supplied directory so that Nextflow metrics can be enhanced with more accurate (but time-limited) HPC stats. Any folder with this file can be reloaded in future.
+2. Run Nextflow on limited samples:
+``` bash
+export NXF_ENABLE_CACHE_INVALIDATION_ON_TASK_DIRECTIVE_CHANGE=false
+nextflow run ... --input samplesheet_4.csv
+```
+
+3. Generate resources.config (limited to ~120GB, 12 hours):
+``` bash
+nf-optimizer -m 500 120000 -t 300 43200 -o resources.config --skip_duration -1 .
+```
+
+4. Run Nextflow on all samples:
+``` bash
+export NXF_ENABLE_CACHE_INVALIDATION_ON_TASK_DIRECTIVE_CHANGE=false
+nextflow run ... --input samplesheet.csv -c resources.config -resume
+```
+
+> [!WARNING]
+> The environment variable `NXF_ENABLE_CACHE_INVALIDATION_ON_TASK_DIRECTIVE_CHANGE` is set to `false` to allow resources.config to be updated without breaking -resume.
+> Unfortunately, this means other changes to task directives (e.g. ext.args) will NOT trigger task re-execution.
+> In this case, you should manually delete the associated work directories before resuming.
+
+Hidden ".nf_optimizer_cache.json" files are created in each supplied directory so that Nextflow metrics can be enhanced with more accurate (but time-limited) HPC stats. Any folder with this file can be reloaded in future.
 
 ## Usage
 ```
